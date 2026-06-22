@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PixelArt — Cartas que emocionan</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Silkscreen&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Cormorant+Garamond:ital,wght@0,400;0,700;1,400&family=Dancing+Script:wght@400;700&family=Great+Vibes&family=Pacifico&family=Caveat:wght@400;700&family=Satisfy&family=Montserrat:wght@300;400;700&family=Poppins:wght@300;400;700&family=Raleway:wght@300;400;700&family=Inter:wght@300;400;700&family=Merriweather:ital,wght@0,400;0,700;1,400&family=Roboto+Slab:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<nav class="nav" role="navigation">
+  <div class="nav__inner">
+    <button class="nav__logo" onclick="App.navigate('home')" aria-label="Inicio">
+      <span>P</span><span>I</span><span>X</span><span>E</span><span>L</span><span class="nav__logo--accent">A</span><span>R</span><span>T</span>
+    </button>
+    <div class="nav__links" role="tablist">
+      <button class="nav__link active" data-section="home" role="tab" aria-selected="true">Inicio</button>
+      <button class="nav__link" data-section="creator" role="tab" aria-selected="false">Crear</button>
+      <button class="nav__link" data-section="about" role="tab" aria-selected="false">Acerca</button>
+    </div>
+  </div>
+</nav>
+
+<main>
+
+<section id="home" class="section active" role="tabpanel">
+  <div class="hero">
+    <span class="hero__badge">Cartas digitales con estilo propio</span>
+    <h1 class="hero__title">
+      <span class="hero__title--main">Crea cartas</span>
+      <span class="hero__title--accent">que emocionan</span>
+    </h1>
+    <p class="hero__desc">
+      Elige una plantilla, personaliza cada detalle y comparte un enlace &uacute;nico<br class="hero__br">
+      con quien quieras sorprender. Sin descargas, sin complicaciones.
+    </p>
+    <button class="btn btn--primary" onclick="App.navigate('creator')">
+      Crear mi carta
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M13 8H3" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+    </button>
+    <div class="hero__features">
+      <div class="h-card"><div class="h-card__icon" aria-hidden="true"></div><div><strong>Plantillas</strong><span>Para toda ocasi&oacute;n</span></div></div>
+      <div class="h-card"><div class="h-card__icon h-card__icon--palette" aria-hidden="true"></div><div><strong>Personaliza</strong><span>Colores, fuentes, estilo</span></div></div>
+      <div class="h-card"><div class="h-card__icon h-card__icon--share" aria-hidden="true"></div><div><strong>Comparte</strong><span>Enlace &uacute;nico y privado</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="creator" class="section" role="tabpanel">
+  <div class="creator">
+    <header class="creator__header">
+      <h2 class="creator__title">Crea tu <span class="text--accent">Carta</span></h2>
+      <p class="creator__sub">Personaliza cada detalle y comp&aacute;rtela al instante</p>
+    </header>
+
+    <div class="creator__layout">
+      <div class="preview">
+        <div class="preview__stage" id="stage">
+          <div class="preview__frame" id="frame">
+            <article class="card" id="card">
+              <div class="card__bg" id="cardBg">
+                <div class="card__pattern" id="cardPattern"></div>
+                <div class="card__deco" id="cardDeco"></div>
+                <div class="card__body">
+                  <div class="card__heading" id="cardHeading"></div>
+                  <div class="card__to" id="cardTo">Para ti</div>
+                  <hr class="card__rule" id="cardRule1" aria-hidden="true">
+                  <p class="card__msg" id="cardMsg">Escribe tu mensaje aqu&iacute;...</p>
+                  <hr class="card__rule" id="cardRule2" aria-hidden="true">
+                  <div class="card__from" id="cardFrom">Con cari&ntilde;o</div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </div>
+        <div class="preview__meta" id="previewMeta">
+          <span class="preview__dot" aria-hidden="true"></span>
+          <span id="previewFont">Press Start 2P</span>
+          <span class="preview__sep" aria-hidden="true">|</span>
+          <span id="previewSize">20px</span>
+        </div>
+      </div>
+
+      <div class="panel" role="toolbar" aria-label="Personalizaci&oacute;n">
+        <div class="panel__body">
+
+          <section class="group">
+            <h3 class="group__title">Plantilla</h3>
+            <div class="group__grid group__grid--4" id="templateGrid" role="radiogroup" aria-label="Plantillas">
+              <button class="t-opt active" data-template="classic" role="radio" aria-checked="true"><span class="t-opt__preview t--classic"></span><span>Cl&aacute;sica</span></button>
+              <button class="t-opt" data-template="love" role="radio" aria-checked="false"><span class="t-opt__preview t--love"></span><span>Amor</span></button>
+              <button class="t-opt" data-template="birthday" role="radio" aria-checked="false"><span class="t-opt__preview t--birthday"></span><span>Cumplea&ntilde;os</span></button>
+              <button class="t-opt" data-template="friendship" role="radio" aria-checked="false"><span class="t-opt__preview t--friendship"></span><span>Amistad</span></button>
+              <button class="t-opt" data-template="apology" role="radio" aria-checked="false"><span class="t-opt__preview t--apology"></span><span>Disculpas</span></button>
+              <button class="t-opt" data-template="elegant" role="radio" aria-checked="false"><span class="t-opt__preview t--elegant"></span><span>Elegante</span></button>
+              <button class="t-opt" data-template="vintage" role="radio" aria-checked="false"><span class="t-opt__preview t--vintage"></span><span>Vintage</span></button>
+              <button class="t-opt" data-template="modern" role="radio" aria-checked="false"><span class="t-opt__preview t--modern"></span><span>Moderna</span></button>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Mensaje</h3>
+            <div class="group__fields">
+              <input type="text" class="fld" id="inputTo" placeholder="Para quien es?" value="Para ti" autocomplete="off">
+              <textarea class="fld fld--area" id="inputMsg" placeholder="Escribe tu mensaje..." rows="4">Escribe tu mensaje aqu&iacute;...</textarea>
+              <input type="text" class="fld" id="inputFrom" placeholder="Firma (ej: Con cari&ntilde;o)" value="Con cari&ntilde;o" autocomplete="off">
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Color</h3>
+            <div class="group__colors">
+              <div class="c-field"><label for="colorBg">Fondo</label><input type="color" id="colorBg" value="#ff6b9d"></div>
+              <div class="c-field"><label for="colorText">Texto</label><input type="color" id="colorText" value="#ffffff"></div>
+              <div class="c-field"><label for="colorAccent">Acento</label><input type="color" id="colorAccent" value="#ffd700"></div>
+              <div class="c-field"><label for="colorBorder">Borde</label><input type="color" id="colorBorder" value="#ffffff"></div>
+              <div class="c-field c-field--grad">
+                <label for="useGradient">Degradado</label>
+                <label class="switch"><input type="checkbox" id="useGradient" role="switch"><span class="switch__slider"></span></label>
+                <input type="color" id="colorGrad" value="#c44dff" disabled>
+                <select id="gradDir" class="fld fld--sel" disabled>
+                  <option value="to bottom">Vertical</option>
+                  <option value="to right">Horizontal</option>
+                  <option value="to bottom right">Diagonal</option>
+                  <option value="to top right">Diagonal inv</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Tipograf&iacute;a</h3>
+            <div class="group__grid group__grid--5" id="fontGrid" role="radiogroup" aria-label="Fuentes">
+              <button class="f-opt active" data-font="pixel" role="radio" aria-checked="true"><span class="f-demo" style="font-family:'Press Start 2P',monospace;font-size:10px">Pixel</span></button>
+              <button class="f-opt" data-font="pixel2" role="radio"><span class="f-demo" style="font-family:'VT323',monospace;font-size:16px">Pixel2</span></button>
+              <button class="f-opt" data-font="pixel3" role="radio"><span class="f-demo" style="font-family:'Silkscreen',monospace;font-size:10px">Px3</span></button>
+              <button class="f-opt" data-font="elegant" role="radio"><span class="f-demo" style="font-family:'Playfair Display',serif">Eleg</span></button>
+              <button class="f-opt" data-font="serif" role="radio"><span class="f-demo" style="font-family:'Cormorant Garamond',serif">Serif</span></button>
+              <button class="f-opt" data-font="script" role="radio"><span class="f-demo" style="font-family:'Great Vibes',cursive;font-size:18px">Scr</span></button>
+              <button class="f-opt" data-font="cursive" role="radio"><span class="f-demo" style="font-family:'Dancing Script',cursive;font-size:14px">Cur</span></button>
+              <button class="f-opt" data-font="handwritten" role="radio"><span class="f-demo" style="font-family:'Pacifico',cursive;font-size:13px">Hand</span></button>
+              <button class="f-opt" data-font="handwritten2" role="radio"><span class="f-demo" style="font-family:'Caveat',cursive;font-size:16px">Hand2</span></button>
+              <button class="f-opt" data-font="modern" role="radio"><span class="f-demo" style="font-family:'Montserrat',sans-serif">Mod</span></button>
+              <button class="f-opt" data-font="modern2" role="radio"><span class="f-demo" style="font-family:'Poppins',sans-serif">Mod2</span></button>
+              <button class="f-opt" data-font="classic" role="radio"><span class="f-demo" style="font-family:'Merriweather',serif">Clas</span></button>
+              <button class="f-opt" data-font="sans" role="radio"><span class="f-demo" style="font-family:'Raleway',sans-serif">Sans</span></button>
+              <button class="f-opt" data-font="light" role="radio"><span class="f-demo" style="font-family:'Inter',sans-serif">Light</span></button>
+              <button class="f-opt" data-font="slab" role="radio"><span class="f-demo" style="font-family:'Roboto Slab',serif">Slab</span></button>
+            </div>
+            <div class="group__slider">
+              <label for="fontSize">Tama&ntilde;o: <span id="sizeLabel">20px</span></label>
+              <input type="range" id="fontSize" min="10" max="48" value="20" step="1">
+            </div>
+            <div class="group__inline">
+              <div class="group__inline-field">
+                <label for="textAlign">Alineaci&oacute;n</label>
+                <select id="textAlign" class="fld fld--sel">
+                  <option value="center">Centro</option>
+                  <option value="left">Izquierda</option>
+                  <option value="right">Derecha</option>
+                </select>
+              </div>
+              <div class="group__inline-field">
+                <label for="letterSpacing">Espaciado</label>
+                <select id="letterSpacing" class="fld fld--sel">
+                  <option value="0">Normal</option>
+                  <option value="1">Ligero</option>
+                  <option value="2">Medio</option>
+                  <option value="4">Amplio</option>
+                </select>
+              </div>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Decoraci&oacute;n</h3>
+            <div class="group__grid group__grid--4" id="decoGrid" role="radiogroup" aria-label="Decoraciones">
+              <button class="d-opt" data-deco="none" role="radio"><span class="d-prev d--none"></span><span>Ninguna</span></button>
+              <button class="d-opt active" data-deco="hearts" role="radio" aria-checked="true"><span class="d-prev d--hearts"></span><span>Corazones</span></button>
+              <button class="d-opt" data-deco="stars" role="radio"><span class="d-prev d--stars"></span><span>Estrellas</span></button>
+              <button class="d-opt" data-deco="flowers" role="radio"><span class="d-prev d--flowers"></span><span>Flores</span></button>
+              <button class="d-opt" data-deco="dots" role="radio"><span class="d-prev d--dots"></span><span>Puntos</span></button>
+              <button class="d-opt" data-deco="geometric" role="radio"><span class="d-prev d--geometric"></span><span>Geom&eacute;trico</span></button>
+              <button class="d-opt" data-deco="waves" role="radio"><span class="d-prev d--waves"></span><span>Olas</span></button>
+              <button class="d-opt" data-deco="confetti" role="radio"><span class="d-prev d--confetti"></span><span>Confeti</span></button>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Borde</h3>
+            <div class="group__grid group__grid--3" id="borderGrid" role="radiogroup" aria-label="Bordes">
+              <button class="b-opt" data-border="none" role="radio"><span>Sin borde</span></button>
+              <button class="b-opt active" data-border="medium" role="radio" aria-checked="true"><span>Medio</span></button>
+              <button class="b-opt" data-border="thick" role="radio"><span>Grueso</span></button>
+              <button class="b-opt" data-border="double" role="radio"><span>Doble</span></button>
+              <button class="b-opt" data-border="dashed" role="radio"><span>Rayado</span></button>
+              <button class="b-opt" data-border="thin" role="radio"><span>Delgado</span></button>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Estilo visual</h3>
+            <div class="group__toggles">
+              <div class="v-field"><label>Fondo</label><div class="toggle" data-target="bg" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
+              <div class="v-field"><label>Texto</label><div class="toggle" data-target="text" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
+              <div class="v-field"><label>Decoraci&oacute;n</label><div class="toggle" data-target="deco" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
+              <div class="v-field"><label>Borde</label><div class="toggle" data-target="border" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
+            </div>
+          </section>
+
+          <section class="group group--actions">
+            <button class="btn btn--primary btn--block" id="btnShare">Generar enlace para compartir</button>
+            <button class="btn btn--ghost btn--block" id="btnSave">Guardar borrador</button>
+            <button class="btn btn--ghost btn--block" id="btnExport">Exportar como imagen</button>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="about" class="section" role="tabpanel">
+  <div class="about">
+    <h2 class="about__title">Acerca de <span class="text--accent">PixelArt</span></h2>
+    <div class="about__grid">
+      <article class="a-card"><div class="a-card__icon a-card__icon--palette" aria-hidden="true"></div><h3>Qu&eacute; es</h3><p>PixelArt es una herramienta para crear cartas digitales personalizadas. Elige plantillas, escribe mensajes, personaliza colores y fuentes, y comparte un enlace &uacute;nico.</p></article>
+      <article class="a-card"><div class="a-card__icon a-card__icon--puzzle" aria-hidden="true"></div><h3>C&oacute;mo funciona</h3><p>Elige plantilla, escribe tu mensaje, personaliza, comparte el enlace. Tu carta se guarda en la URL, solo t&uacute; y quien recibe el enlace pueden verla.</p></article>
+      <article class="a-card"><div class="a-card__icon a-card__icon--lock" aria-hidden="true"></div><h3>Privacidad</h3><p>Los datos se guardan en la URL codificados. No usamos servidores ni bases de datos. Tu carta es privada y solo accesible mediante el enlace.</p></article>
+      <article class="a-card"><div class="a-card__icon a-card__icon--star" aria-hidden="true"></div><h3>Pixel &amp; Smooth</h3><p>Puedes mezclar estilos: fondo pixel, texto smooth, decoraci&oacute;n pixel, borde smooth. T&uacute; decides c&oacute;mo se ve cada elemento.</p></article>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="modal__backdrop" onclick="App.closeModal()"></div>
+  <div class="modal__box">
+    <div class="modal__head">
+      <h2>Enlace generado</h2>
+      <button class="modal__close" onclick="App.closeModal()" aria-label="Cerrar">&times;</button>
+    </div>
+    <div class="modal__body">
+      <p>Tu carta est&aacute; lista. Copia el enlace y comp&aacute;rtelo con esa persona especial.</p>
+      <div class="modal__row">
+        <input type="text" id="shareLink" readonly aria-label="Enlace de la carta">
+        <button class="btn btn--primary btn--sm" onclick="App.copyLink()">Copiar</button>
+      </div>
+      <div class="modal__preview" id="modalPreview"><span id="modalPreviewText">Vista previa</span></div>
+      <div class="modal__note">El enlace contiene toda la informaci&oacute;n de la carta. No expira, pero si pierdes el enlace, no hay forma de recuperarlo.</div>
+    </div>
+  </div>
+</div>
+
+<footer class="footer">
+  <div class="footer__inner">
+    <div class="footer__logo"><span>P</span><span>I</span><span>X</span><span>E</span><span>L</span><span class="nav__logo--accent">A</span><span>R</span><span>T</span></div>
+    <p>Hecho con dedicaci&oacute;n para regalar sonrisas</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>

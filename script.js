@@ -392,19 +392,38 @@
   // SHARE
   // ============================
 
+  function toB64(obj) {
+    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
+  }
+  function fromB64(str) {
+    return JSON.parse(decodeURIComponent(escape(atob(str))))
+  }
+
   function generateLink() {
-    const data = {
-      t: state.template, f: state.font, d: state.deco, b: state.border,
-      r: state.to, m: state.msg, s: state.from,
-      bg: state.bg, tx: state.text, ac: state.accent, bc: state.borderColor,
-      ge: state.grad, gc: state.gradColor, gd: state.gradDir,
-      fs: state.fontSize, al: state.align, ls: state.letterSpacing,
-      vb: state.visual.bg, vt: state.visual.text,
-      vd: state.visual.deco, vbo: state.visual.border
-    }
+    // Strip defaults to shorten URL
+    const d = {}
+    if (state.template !== 'classic') d.t = state.template
+    if (state.font !== 'pixel') d.f = state.font
+    if (state.deco !== 'none') d.d = state.deco
+    if (state.border !== 'medium') d.b = state.border
+    d.r = state.to
+    d.m = state.msg
+    d.s = state.from
+    d.bg = state.bg
+    d.tx = state.text
+    d.ac = state.accent
+    if (state.borderColor !== '#ffffff') d.bc = state.borderColor
+    if (state.grad) { d.ge = true; d.gc = state.gradColor; d.gd = state.gradDir }
+    if (state.fontSize !== 20) d.fs = state.fontSize
+    if (state.align !== 'center') d.al = state.align
+    if (state.letterSpacing !== '0') d.ls = state.letterSpacing
+    if (state.visual.bg !== 'pixel') d.vb = state.visual.bg
+    if (state.visual.text !== 'pixel') d.vt = state.visual.text
+    if (state.visual.deco !== 'pixel') d.vd = state.visual.deco
+    if (state.visual.border !== 'pixel') d.vbo = state.visual.border
 
     try {
-      const enc = btoa(encodeURIComponent(JSON.stringify(data)))
+      const enc = toB64(d)
       const url = window.location.origin +
         window.location.pathname.replace(/\/?$/, '/') +
         '?card=' + enc
@@ -474,7 +493,7 @@
     if (!raw) return
 
     try {
-      const d = JSON.parse(decodeURIComponent(atob(raw)))
+      const d = fromB64(raw)
       state.template = d.t || 'classic'
       state.font = d.f || 'pixel'
       state.deco = d.d || 'none'

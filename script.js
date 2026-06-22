@@ -392,11 +392,11 @@
   // SHARE
   // ============================
 
-  function toB64(obj) {
-    return btoa(unescape(encodeURIComponent(JSON.stringify(obj))))
+  function compress(obj) {
+    return LZString.compressToEncodedURIComponent(JSON.stringify(obj))
   }
-  function fromB64(str) {
-    return JSON.parse(decodeURIComponent(escape(atob(str))))
+  function decompress(str) {
+    return JSON.parse(LZString.decompressFromEncodedURIComponent(str))
   }
 
   function generateLink() {
@@ -423,7 +423,7 @@
     if (state.visual.border !== 'pixel') d.vbo = state.visual.border
 
     try {
-      const enc = toB64(d)
+      const enc = compress(d)
       const url = window.location.origin +
         window.location.pathname.replace(/\/?$/, '/') +
         '?card=' + enc
@@ -493,7 +493,7 @@
     if (!raw) return
 
     try {
-      const d = fromB64(raw)
+      const d = decompress(raw)
       state.template = d.t || 'classic'
       state.font = d.f || 'pixel'
       state.deco = d.d || 'none'

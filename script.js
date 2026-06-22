@@ -91,6 +91,19 @@
   }
 
   // ============================
+  // DRAWING STATE
+  // ============================
+
+  const draw = {
+    strokes: [],
+    current: [],
+    isDown: false,
+    active: false,
+    color: '#ff6b9d',
+    size: 4
+  }
+
+  // ============================
   // DOM REFS
   // ============================
 
@@ -104,6 +117,7 @@
     dom.cardBg = $('cardBg')
     dom.cardPattern = $('cardPattern')
     dom.cardDeco = $('cardDeco')
+    dom.cardCanvas = $('cardCanvas')
     dom.cardHeading = $('cardHeading')
     dom.cardTo = $('cardTo')
     dom.cardMsg = $('cardMsg')
@@ -135,6 +149,15 @@
     dom.modal = $('modal')
     dom.modalPreview = $('modalPreview')
     dom.modalPreviewText = $('modalPreviewText')
+
+    dom.drawToggle = $('drawToggle')
+    dom.drawHint = $('drawHint')
+    dom.drawColor = $('drawColor')
+    dom.drawSize = $('drawSize')
+    dom.undoBtn = $('undoBtn')
+    dom.clearBtn = $('clearBtn')
+    dom.emojiBtn = $('emojiBtn')
+    dom.emojiPicker = $('emojiPicker')
   }
 
   // ============================
@@ -142,8 +165,8 @@
   // ============================
 
   const render = {
-    all() {
-      this.template()
+    all(applyTemplateColors) {
+      this.template(applyTemplateColors)
       this.colors()
       this.text()
       this.font()
@@ -153,13 +176,13 @@
       this.meta()
     },
 
-    template() {
+    template(applyColors) {
       dom.card.className = 'card'
       const t = state.template
       dom.card.classList.add('t--' + t)
 
       const active = TEMPLATES[t]
-      if (active) {
+      if (active && applyColors) {
         dom.colorBg.value = active.bg
         dom.colorText.value = active.text
         dom.colorAccent.value = active.accent
@@ -339,14 +362,10 @@
   // ACTIONS
   // ============================
 
-  function scheduleRender() {
-    render.all()
-  }
-
   const actions = {
     selectTemplate(tmpl) {
       state.template = tmpl
-      scheduleRender()
+      render.all(true)
     },
 
     selectFont(font) {
@@ -370,10 +389,14 @@
       render.all()
     },
 
-    readFields() {
+    readText() {
       state.to = dom.inputTo.value || 'Para ti'
       state.msg = dom.inputMsg.value || '...'
       state.from = dom.inputFrom.value || 'Con cari\u00f1o'
+      render.text()
+    },
+
+    readFields() {
       state.bg = dom.colorBg.value
       state.text = dom.colorText.value
       state.accent = dom.colorAccent.value
@@ -422,6 +445,16 @@
     if (state.visual.deco !== 'pixel') d.vd = state.visual.deco
     if (state.visual.border !== 'pixel') d.vbo = state.visual.border
 
+    // Drawing strokes (strip color/size from points, keep per-stroke)
+    const sw = strokeData()
+    if (sw.length) {
+      d.sk = sw.map(s => ({
+        c: s[0].c,
+        w: s[0].w,
+        p: s.map(pt => [Math.round(pt.x * 1000), Math.round(pt.y * 1000)])
+      }))
+    }
+
     try {
       const enc = compress(d)
       const url = window.location.origin +
@@ -437,7 +470,7 @@
         (state.msg.length > 45 ? '...' : '')
       dom.modalPreviewText.style.fontFamily = info.family
 
-      saveHistory(data)
+      saveHistory(d)
       notify('Enlace generado con \u00e9xito')
     } catch (e) {
       notify('Error al generar el enlace')
@@ -471,6 +504,14 @@
       vb: state.visual.bg, vt: state.visual.text,
       vd: state.visual.deco, vbo: state.visual.border,
       ts: Date.now()
+    }
+    // Save drawing strokes
+    const sw = strokeData()
+    if (sw.length) {
+      data.sk = sw.map(s => ({
+        c: s[0].c, w: s[0].w,
+        p: s.map(pt => [Math.round(pt.x * 1000), Math.round(pt.y * 1000)])
+      }))
     }
     const drafts = JSON.parse(localStorage.getItem('pix_drafts') || '[]')
     drafts.unshift(data)
@@ -516,9 +557,26 @@
       if (d.vd) state.visual.deco = d.vd
       if (d.vbo) state.visual.border = d.vbo
 
+      // Load drawing strokes
+      if (d.sk && d.sk.length) {
+        loadStrokes(d.sk.map(s => s.p.map((pt, i) => ({
+          x: pt[0] / 1000,
+          y: pt[1] / 1000,
+          c: i === 0 ? s.c : undefined,
+          w: i === 0 ? s.w : undefined
+        }))))
+      }
+
       syncDOM()
       render.all()
       render.toggles()
+
+      // Render saved strokes on canvas
+      requestAnimationFrame(() => {
+        if (dom.cardCanvas) {
+          setupCanvas()
+        }
+      })
 
       // Modo vista: oculta todo menos la carta
       document.body.classList.add('view-mode')
@@ -670,6 +728,10 @@
           ctx.strokeRect(bc.w * scale * 1.5, bc.w * scale * 1.5,
             canvas.width - bc.w * scale * 3, canvas.height - bc.w * scale * 3)
           ctx.setLineDash([])
+
+          // Drawing strokes
+          drawStrokesOnCtx(ctx, canvas.width, canvas.height)
+
           btn.innerHTML = orig
           btn.disabled = false
           downloadCanvas(canvas)
@@ -678,6 +740,9 @@
         ctx.strokeRect(bc.w * scale / 2, bc.w * scale / 2,
           canvas.width - bc.w * scale, canvas.height - bc.w * scale)
       }
+
+      // Drawing strokes
+      drawStrokesOnCtx(ctx, canvas.width, canvas.height)
 
       btn.innerHTML = orig
       btn.disabled = false
@@ -711,6 +776,185 @@
   }
 
   // ============================
+  // DRAWING ENGINE
+  // ============================
+
+  let drawCtx = null
+
+  function setupCanvas() {
+    const canvas = dom.cardCanvas
+    const rect = dom.card.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return
+    canvas.width = rect.width
+    canvas.height = rect.height
+    canvas.style.width = rect.width + 'px'
+    canvas.style.height = rect.height + 'px'
+    drawCtx = canvas.getContext('2d')
+    drawCtx.lineCap = 'round'
+    drawCtx.lineJoin = 'round'
+    redrawCanvas()
+  }
+
+  function redrawCanvas() {
+    if (!drawCtx) return
+    const c = dom.cardCanvas
+    drawCtx.clearRect(0, 0, c.width, c.height)
+    draw.strokes.forEach(s => drawStroke(s))
+  }
+
+  function drawStroke(s) {
+    if (!drawCtx || s.length < 2) return
+    const c = dom.cardCanvas
+    drawCtx.beginPath()
+    drawCtx.strokeStyle = s[0].c
+    drawCtx.lineWidth = s[0].w
+    drawCtx.moveTo(s[0].x * c.width, s[0].y * c.height)
+    for (let i = 1; i < s.length; i++) {
+      drawCtx.lineTo(s[i].x * c.width, s[i].y * c.height)
+    }
+    drawCtx.stroke()
+  }
+
+  function getCanvasPos(e) {
+    const rect = dom.cardCanvas.getBoundingClientRect()
+    const pt = e.touches ? e.touches[0] : e
+    return {
+      x: (pt.clientX - rect.left) / rect.width,
+      y: (pt.clientY - rect.top) / rect.height
+    }
+  }
+
+  function onPointerDown(e) {
+    if (!draw.active) return
+    e.preventDefault()
+    const pos = getCanvasPos(e)
+    draw.isDown = true
+    draw.current = [{ x: pos.x, y: pos.y, c: draw.color, w: draw.size }]
+  }
+
+  function onPointerMove(e) {
+    if (!draw.isDown) return
+    e.preventDefault()
+    const pos = getCanvasPos(e)
+    draw.current.push({ x: pos.x, y: pos.y })
+    if (!drawCtx) return
+    const c = dom.cardCanvas
+    drawCtx.clearRect(0, 0, c.width, c.height)
+    redrawCanvas()
+    drawStroke(draw.current)
+  }
+
+  function onPointerUp(e) {
+    if (!draw.isDown) return
+    draw.isDown = false
+    if (draw.current.length >= 2) {
+      draw.strokes.push(draw.current)
+    }
+    draw.current = []
+  }
+
+  function setupDrawEvents() {
+    const el = dom.cardCanvas
+    el.addEventListener('pointerdown', onPointerDown)
+    el.addEventListener('pointermove', onPointerMove)
+    el.addEventListener('pointerup', onPointerUp)
+    el.addEventListener('pointerleave', onPointerUp)
+    el.addEventListener('pointercancel', onPointerUp)
+  }
+
+  function toggleDraw() {
+    draw.active = !draw.active
+    dom.drawToggle.classList.toggle('active', draw.active)
+    dom.drawToggle.parentElement.classList.toggle('is-active', draw.active)
+    dom.frame.classList.toggle('is-draw', draw.active)
+    dom.drawToggle.textContent = draw.active ? 'Dibujando' : 'Dibujar'
+    if (draw.active) {
+      requestAnimationFrame(setupCanvas)
+    }
+  }
+
+  function undoStroke() {
+    draw.strokes.pop()
+    redrawCanvas()
+  }
+
+  function clearStrokes() {
+    draw.strokes = []
+    redrawCanvas()
+  }
+
+  function drawStrokesOnCtx(ctx, w, h) {
+    draw.strokes.forEach(s => {
+      if (s.length < 2) return
+      ctx.beginPath()
+      ctx.strokeStyle = s[0].c
+      ctx.lineWidth = s[0].w
+      ctx.lineCap = 'round'
+      ctx.lineJoin = 'round'
+      ctx.moveTo(s[0].x * w, s[0].y * h)
+      for (let i = 1; i < s.length; i++) {
+        ctx.lineTo(s[i].x * w, s[i].y * h)
+      }
+      ctx.stroke()
+    })
+  }
+
+  function strokeData() {
+    return draw.strokes
+  }
+
+  function loadStrokes(data) {
+    draw.strokes = data || []
+  }
+
+  // ============================
+  // EMOJI PICKER
+  // ============================
+
+  function toggleEmojiPicker() {
+    const picker = dom.emojiPicker
+    const show = picker.classList.contains('show')
+    if (show) {
+      picker.classList.remove('show')
+      picker.setAttribute('aria-hidden', 'true')
+    } else {
+      picker.classList.add('show')
+      picker.setAttribute('aria-hidden', 'false')
+      positionEmojiPicker()
+    }
+  }
+
+  function positionEmojiPicker() {
+    const btn = dom.emojiBtn
+    const rect = btn.getBoundingClientRect()
+    const picker = dom.emojiPicker
+    picker.style.left = Math.min(rect.left, window.innerWidth - 290) + 'px'
+    picker.style.top = (rect.top - 170) + 'px'
+    picker.style.transform = 'none'
+  }
+
+  function insertEmoji(emoji) {
+    const ta = dom.inputMsg
+    const start = ta.selectionStart
+    const end = ta.selectionEnd
+    const val = ta.value
+    ta.value = val.substring(0, start) + emoji + val.substring(end)
+    ta.selectionStart = ta.selectionEnd = start + emoji.length
+    ta.focus()
+    ta.dispatchEvent(new Event('input', { bubbles: true }))
+    dom.emojiPicker.classList.remove('show')
+    dom.emojiPicker.setAttribute('aria-hidden', 'true')
+  }
+
+  function closeEmojiPicker(e) {
+    const picker = dom.emojiPicker
+    if (!picker.classList.contains('show')) return
+    if (e.target === dom.emojiBtn || picker.contains(e.target)) return
+    picker.classList.remove('show')
+    picker.setAttribute('aria-hidden', 'true')
+  }
+
+  // ============================
   // NAVIGATION
   // ============================
 
@@ -724,6 +968,11 @@
     const sec = document.getElementById(sectionId)
     if (sec) sec.classList.add('active')
     window.scrollTo({ top: 0, behavior: 'smooth' })
+
+    // Re-setup canvas when entering creator
+    if (sectionId === 'creator' && dom.cardCanvas && dom.card.offsetWidth > 0) {
+      requestAnimationFrame(setupCanvas)
+    }
   }
 
   // ============================
@@ -783,15 +1032,32 @@
       })
     })
 
-    // Inputs (debounced)
+    // Inputs
     const inputs = [dom.inputTo, dom.inputMsg, dom.inputFrom]
     const triggers = [
       dom.colorBg, dom.colorText, dom.colorAccent, dom.colorBorder,
       dom.useGradient, dom.colorGrad, dom.gradDir,
       dom.fontSize, dom.align, dom.letterSpacing
     ]
-    inputs.forEach(el => el.addEventListener('input', actions.readFields))
+    inputs.forEach(el => el.addEventListener('input', actions.readText))
     triggers.forEach(el => el.addEventListener('input', actions.readFields))
+    // Color inputs also on change (more reliable on mobile)
+    [dom.colorBg, dom.colorText, dom.colorAccent, dom.colorBorder, dom.colorGrad]
+      .forEach(el => el.addEventListener('change', actions.readFields))
+
+    // Drawing
+    dom.drawToggle.addEventListener('click', toggleDraw)
+    dom.undoBtn.addEventListener('click', undoStroke)
+    dom.clearBtn.addEventListener('click', clearStrokes)
+    dom.drawColor.addEventListener('input', () => { draw.color = dom.drawColor.value })
+    dom.drawSize.addEventListener('change', () => { draw.size = parseInt(dom.drawSize.value) })
+
+    // Emoji
+    dom.emojiBtn.addEventListener('click', toggleEmojiPicker)
+    dom.emojiPicker.querySelectorAll('.emoji-picker__item').forEach(btn => {
+      btn.addEventListener('click', () => insertEmoji(btn.dataset.emoji))
+    })
+    document.addEventListener('click', closeEmojiPicker)
 
     // Buttons
     dom.btnShare.addEventListener('click', generateLink)
@@ -820,7 +1086,19 @@
     bindEvents()
     render.all()
     render.toggles()
+    setupDrawEvents()
+
+    // Load card from URL (if any) — this sets up canvas if needed
     loadFromURL()
+
+    // Resize handler
+    let resizeTimer
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer)
+      resizeTimer = setTimeout(() => {
+        if (dom.cardCanvas && draw.active) setupCanvas()
+      }, 200)
+    })
 
     // Expose to global for inline handlers
     window.App = {

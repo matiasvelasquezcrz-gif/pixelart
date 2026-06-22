@@ -149,12 +149,18 @@ body{
    PREVIEW
    ============================ */
 .preview{position:sticky;top:72px}
+@media(max-width:960px){.preview{position:static}}
 .preview__stage{
   background:var(--surface);border-radius:var(--radius-lg);
   padding:28px;border:1px solid var(--border);
   display:flex;align-items:center;justify-content:center;
   min-height:440px;transition:border-color .3s;
 }
+.preview__toolbar{display:flex;align-items:center;gap:8px;margin-bottom:8px;min-height:32px}
+.preview__toolbar-hint{font-size:11px;color:var(--text3);display:none}
+.preview__toolbar.is-active .preview__toolbar-hint{display:inline}
+#drawToggle.active{background:var(--pink);color:#fff;border-color:var(--pink)}
+
 .preview__frame{
   width:100%;max-width:320px;aspect-ratio:3/4.1;
   margin:0 auto;position:relative;
@@ -164,10 +170,16 @@ body{
 .preview__frame.is-pixel{
   box-shadow:4px 4px 0 rgba(0,0,0,.25),var(--shadow-card);
 }
+.preview__frame.is-draw .card__canvas{pointer-events:auto;cursor:crosshair}
+.preview__frame.is-draw .card__body{pointer-events:none}
 
 .card{
   width:100%;height:100%;position:relative;
   transition:all .3s var(--ease);overflow:hidden;
+}
+.card__canvas{
+  position:absolute;top:0;left:0;width:100%;height:100%;z-index:3;
+  pointer-events:none;touch-action:none;image-rendering:auto;
 }
 .card__bg{
   width:100%;height:100%;display:flex;align-items:center;
@@ -215,6 +227,7 @@ body{
    ============================ */
 .panel{background:var(--surface);border-radius:var(--radius-lg);border:1px solid var(--border);overflow:hidden}
 .panel__body{max-height:calc(100vh - 96px);overflow-y:auto;padding:20px;display:flex;flex-direction:column;gap:18px}
+@media(max-width:960px){.panel__body{max-height:none;overflow-y:visible;-webkit-overflow-scrolling:touch}}
 .panel__body::-webkit-scrollbar{width:3px}
 
 .group{}
@@ -224,6 +237,37 @@ body{
 .group__grid--4{grid-template-columns:repeat(4,1fr)}
 .group__grid--5{grid-template-columns:repeat(5,1fr)}
 .group__fields{display:flex;flex-direction:column;gap:8px}
+.fld--area-wrap{position:relative;display:flex}
+.fld--area-wrap .fld--area{flex:1}
+.emoji-btn{
+  position:absolute;right:4px;bottom:4px;width:28px;height:28px;
+  border:none;background:var(--surface);border-radius:6px;
+  cursor:pointer;font-size:16px;line-height:1;display:flex;
+  align-items:center;justify-content:center;transition:background .2s;
+  color:var(--text2);
+}
+.emoji-btn:hover{background:var(--surface2);color:var(--text)}
+.emoji-picker{
+  display:none;position:fixed;z-index:300;margin-top:4px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:12px;box-shadow:var(--shadow-lg);overflow:hidden;
+  max-width:280px;
+}
+.emoji-picker.show{display:block;animation:fadeIn .15s var(--ease)}
+.emoji-picker__inner{
+  display:grid;grid-template-columns:repeat(10,1fr);gap:2px;
+  padding:8px;max-height:160px;overflow-y:auto;
+}
+.emoji-picker__item{
+  background:none;border:none;cursor:pointer;font-size:20px;
+  padding:4px;border-radius:6px;transition:background .15s;line-height:1;
+}
+.emoji-picker__item:hover{background:var(--surface2)}
+
+#drawGrid{display:grid;grid-template-columns:1fr 1fr;gap:6px;align-items:end}
+#drawGrid .btn{width:100%;padding:7px 8px;font-size:11px}
+#drawGrid .c-field{gap:6px}
+#drawGrid .c-field label{min-width:auto;font-size:10px}
 .group__slider{display:flex;flex-direction:column;gap:4px;margin-top:8px}
 .group__slider label{font-size:12px;color:var(--text3)}
 .group__slider input{width:100%;accent-color:var(--pink);height:4px;border-radius:2px;background:var(--border);outline:none;cursor:pointer}
@@ -241,11 +285,12 @@ body{
 .fld{
   padding:8px 12px;border-radius:8px;border:1px solid var(--border);
   background:var(--bg);color:var(--text);font-size:13px;outline:none;
-  transition:border-color .2s;font-family:var(--font-ui);
+  transition:border-color .2s;font-family:var(--font-ui);touch-action:manipulation;
 }
 .fld::placeholder{color:var(--text3);opacity:.6}
 .fld:focus{border-color:var(--pink)}
 .fld--area{resize:vertical;min-height:64px;font-size:13px;line-height:1.5}
+@media(max-width:600px){.fld{font-size:16px}}
 .fld--sel{
   padding:7px 10px;font-size:12px;cursor:pointer;
   -webkit-appearance:none;appearance:none;
@@ -472,6 +517,7 @@ body{
   .preview__stage{min-height:320px;padding:16px}
   .group__inline{flex-direction:column;gap:8px}
   .section{padding:64px 16px 40px}
+  #drawGrid{grid-template-columns:1fr 1fr}
 }
 
 /* ============================
@@ -488,6 +534,7 @@ body.view-mode .creator__header,
 body.view-mode .creator__sub,
 body.view-mode .panel,
 body.view-mode .preview__meta,
+body.view-mode .preview__toolbar,
 body.view-mode .footer,
 body.view-mode .notif{display:none!important}
 

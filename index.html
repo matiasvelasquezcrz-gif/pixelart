@@ -59,12 +59,17 @@
 
     <div class="creator__layout">
       <div class="preview">
+        <div class="preview__toolbar">
+          <button class="btn btn--sm btn--ghost" id="drawToggle" title="Activar dibujo">Dibujar</button>
+          <span class="preview__toolbar-hint" id="drawHint">Dibuja sobre la carta</span>
+        </div>
         <div class="preview__stage" id="stage">
           <div class="preview__frame" id="frame">
             <article class="card" id="card">
               <div class="card__bg" id="cardBg">
                 <div class="card__pattern" id="cardPattern"></div>
                 <div class="card__deco" id="cardDeco"></div>
+                <canvas class="card__canvas" id="cardCanvas"></canvas>
                 <div class="card__body">
                   <div class="card__heading" id="cardHeading"></div>
                   <div class="card__to" id="cardTo">Para ti</div>
@@ -106,7 +111,44 @@
             <h3 class="group__title">Mensaje</h3>
             <div class="group__fields">
               <input type="text" class="fld" id="inputTo" placeholder="Para quien es?" value="Para ti" autocomplete="off">
-              <textarea class="fld fld--area" id="inputMsg" placeholder="Escribe tu mensaje..." rows="4">Escribe tu mensaje aqu&iacute;...</textarea>
+              <div class="fld--area-wrap">
+                <textarea class="fld fld--area" id="inputMsg" placeholder="Escribe tu mensaje..." rows="4">Escribe tu mensaje aqu&iacute;...</textarea>
+                <button class="emoji-btn" id="emojiBtn" type="button" title="Insertar emoji" aria-label="Insertar emoji"></button>
+              </div>
+              <div class="emoji-picker" id="emojiPicker" role="menu" aria-hidden="true">
+                <div class="emoji-picker__inner">
+                  <button class="emoji-picker__item" data-emoji="&#x1f60a;" role="menuitem">&#x1f60a;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f618;" role="menuitem">&#x1f618;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f60d;" role="menuitem">&#x1f60d;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x2764;&#xfe0f;" role="menuitem">&#x2764;&#xfe0f;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f49c;" role="menuitem">&#x1f49c;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f338;" role="menuitem">&#x1f338;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f339;" role="menuitem">&#x1f339;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f44d;" role="menuitem">&#x1f44d;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f44c;" role="menuitem">&#x1f44c;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f4aa;" role="menuitem">&#x1f4aa;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x2b50;" role="menuitem">&#x2b50;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f31f;" role="menuitem">&#x1f31f;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f525;" role="menuitem">&#x1f525;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f496;" role="menuitem">&#x1f496;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f49d;" role="menuitem">&#x1f49d;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f49e;" role="menuitem">&#x1f49e;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f49a;" role="menuitem">&#x1f49a;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f49b;" role="menuitem">&#x1f49b;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x2728;" role="menuitem">&#x2728;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f389;" role="menuitem">&#x1f389;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f381;" role="menuitem">&#x1f381;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f3b5;" role="menuitem">&#x1f3b5;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f308;" role="menuitem">&#x1f308;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f31e;" role="menuitem">&#x1f31e;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f4af;" role="menuitem">&#x1f4af;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f48b;" role="menuitem">&#x1f48b;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f48c;" role="menuitem">&#x1f48c;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f490;" role="menuitem">&#x1f490;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f382;" role="menuitem">&#x1f382;</button>
+                  <button class="emoji-picker__item" data-emoji="&#x1f4a1;" role="menuitem">&#x1f4a1;</button>
+                </div>
+              </div>
               <input type="text" class="fld" id="inputFrom" placeholder="Firma (ej: Con cari&ntilde;o)" value="Con cari&ntilde;o" autocomplete="off">
             </div>
           </section>
@@ -209,6 +251,16 @@
               <div class="v-field"><label>Texto</label><div class="toggle" data-target="text" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
               <div class="v-field"><label>Decoraci&oacute;n</label><div class="toggle" data-target="deco" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
               <div class="v-field"><label>Borde</label><div class="toggle" data-target="border" role="radiogroup"><button class="toggle__opt active" data-value="pixel" role="radio" aria-checked="true">Pixel</button><button class="toggle__opt" data-value="smooth" role="radio">Smooth</button></div></div>
+            </div>
+          </section>
+
+          <section class="group">
+            <h3 class="group__title">Dibujo</h3>
+            <div class="group__grid group__grid--4" id="drawGrid">
+              <div class="c-field"><label for="drawColor">Color</label><input type="color" id="drawColor" value="#ff6b9d"></div>
+              <div class="group__inline-field"><label for="drawSize">Grosor</label><select id="drawSize" class="fld fld--sel"><option value="2">Fino</option><option value="4" selected>Medio</option><option value="6">Grueso</option><option value="10">Muy grueso</option></select></div>
+              <button class="btn btn--ghost btn--sm" id="undoBtn">Deshacer</button>
+              <button class="btn btn--ghost btn--sm" id="clearBtn">Limpiar</button>
             </div>
           </section>
 
